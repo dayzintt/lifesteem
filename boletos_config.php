@@ -1,9 +1,8 @@
 <?php
 session_start();
 
-// Verifique se o usuário não está logado
+// Verifique se o usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
-    // Se não estiver logado, redirecione para a página de login
     header('Location: login.php');
     exit();
 }
@@ -56,7 +55,7 @@ $result = $stmt->get_result();
             <td><?php echo $row['id']; ?></td>
             <td><?php echo $row['valor']; ?></td>
             <td><?php echo $row['vencimento']; ?></td>
-            <td><?php echo $row['descricao']; ?></td>
+            <td><a href="gerar_qrcode.php?id=<?php echo $row['id']; ?>"><?php echo $row['descricao']; ?></a></td>
         </tr>
         <?php endwhile; ?>
     </table>
