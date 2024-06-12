@@ -62,7 +62,7 @@ $usuario_nome = $_SESSION['usuario_nome'];
     <div class="navbar">
         <a href="boletos_config.php">Boletos</a>
         <a href="anuncios.php">Anúncios</a>
-        <!-- Botão para Modo Escuro -->
+        
         
     </div>
 
