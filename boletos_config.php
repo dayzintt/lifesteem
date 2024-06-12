@@ -7,6 +7,9 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
+// Recupere o nome do usuário da sessão
+$usuario_nome = $_SESSION['usuario_nome'];
+
 // Inclua a configuração do banco de dados
 include_once('configs.php');
 
@@ -31,6 +34,8 @@ $result = $stmt->get_result();
         table {
             width: 100%;
             border-collapse: collapse;
+            background-color: white;
+            color: 000;
         }
         table, th, td {
             border: 1px solid black;
@@ -39,10 +44,19 @@ $result = $stmt->get_result();
             padding: 10px;
             text-align: left;
         }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-image: linear-gradient(95deg, rgb(76, 200, 238), rgba(255, 145, 0, 0.856));
+            text-align: center;
+            color: 000;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Boletos</h1>
+    
+
     <table>
         <tr>
             <th>ID</th>
@@ -55,7 +69,8 @@ $result = $stmt->get_result();
             <td><?php echo $row['id']; ?></td>
             <td><?php echo $row['valor']; ?></td>
             <td><?php echo $row['vencimento']; ?></td>
-            <td><a href="gerar_qrcode.php?id=<?php echo $row['id']; ?>"><?php echo $row['descricao']; ?></a></td>
+            <td><a href="gerar_qrcode.php?id=<?php echo $row['id']; ?>&valor=<?php echo $row['valor']; ?>"><?php echo $row['descricao']; ?></a></td>
+
         </tr>
         <?php endwhile; ?>
     </table>

@@ -1,72 +1,110 @@
 <?php
-require 'vendor/autoload.php';
+session_start();
 
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
-
-include_once('configs.php');
-
-// Verificar se o ID do boleto foi passado
-if (!isset($_GET['id'])) {
-    die("ID do boleto não fornecido.");
+// Verifique se o usuário está logado
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: login.php');
+    exit();
 }
 
-$boleto_id = $_GET['id'];
-
-// Consulta para obter os dados do boleto
-$sql = "SELECT * FROM boletos WHERE id = ?";
-$stmt = $conex->prepare($sql);
-$stmt->bind_param("i", $boleto_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$boleto = $result->fetch_assoc();
-
-// Verificar se o boleto existe
-if (!$boleto) {
-    die("Boleto não encontrado.");
+// Verifique se o parâmetro 'valor' está presente na URL
+if (!isset($_GET['valor'])) {
+    // Se o parâmetro 'valor' não estiver presente, redirecione de volta para a página anterior
+    header('Location: index.php');
+    exit();
 }
 
-// Dados para o QR Code PIX
-$pixKey = "sua_chave_pix"; // Substitua pela sua chave PIX
-$description = $boleto['descricao'];
-$amount = number_format($boleto['valor'], 2, '.', ''); // Formatar o valor para 2 casas decimais
-$merchantName = "Seu Nome ou Empresa"; // Substitua pelo nome do comerciante
-
-// Montar os dados do payload PIX de forma simplificada
-$payload = "000201"
-    . "010211"
-    . "26360014br.gov.bcb.pix"
-    . "0114$pixKey"
-    . "52040000"
-    . "5303986"
-    . "5405$amount"
-    . "5802BR"
-    . "5901$merchantName"
-    . "6008BRASILIA"
-    . "6304";
-
-// Configurar o QR Code
-$options = new QROptions([
-    'version'    => 7, // Aumentar a versão do QR Code para suportar mais dados
-    'outputType' => QRCode::OUTPUT_IMAGE_PNG,
-    'eccLevel'   => QRCode::ECC_L, // Nível mais baixo de correção de erros para permitir mais dados
-]);
-
-// Gerar o QR Code
-$qrcode = new QRCode($options);
-$qrcodeImage = $qrcode->render($payload);
-
-// Exibir o QR Code na página HTML
+// Recupere o valor do boleto da URL
+$valor_do_boleto = $_GET['valor'];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code PIX</title>
+    <title>Gerar QR Code</title>
+    <style>
+        .botao {
+            background-color: rgb(3, 92, 3);
+            border: none;
+            padding: 15px;
+            width: 40%;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            position: absolute;
+            right: 30%;
+            top: 80%;
+        }
+        body {
+
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+        .dark-mode  {
+            background-color: #050;
+            color: white;
+        }
+        /* Estilos para o botão de Modo Escuro */
+        .dark-mode #modoEscuroBtn {
+            background-color: #555;
+            color: white;
+        }
+        #qrCodeImage {
+            display: block; /* Por padrão, o elemento deve ser exibido */
+            position: absolute;
+            left: 38%;
+        }
+        #verifiedImage {
+            display: none; /* Inicialmente, a imagem de verificado deve estar oculta */
+            position: absolute;
+            left: 38%;
+        }
+
+
+    </style>
 </head>
 <body>
-    <h1>QR Code para Pagamento</h1>
-    <img src="data:image/png;base64,<?php echo base64_encode($qrcodeImage); ?>" alt="QR Code PIX">
+    <h1>Pagamento por QR code</h1>
+    <p>Valor de Pagamento: R$ <?php echo $valor_do_boleto; ?></p> <!-- Exibe o valor do boleto -->
+    <br>
+    <br>
+    <br>
+    <!-- QR Code inicialmente visível -->
+    <img id="qrCodeImage" src="download.png" alt="QR Code"  width="400" height="400">
+
+    <!-- Imagem de verificado inicialmente oculta -->
+    <img id="verifiedImage" src="verificado.png" alt="Verified" width="400" height="400">
+
+    <!-- Botão para Modo Escuro / Confirmar pagamento -->
+    <br>
+    <br>
+    <br>
+    <button class='botao' id="modoEscuroBtn">Confirmar pagamento.</button>
+
+    <script>
+        // Selecione o botão de Modo Escuro / Confirmar pagamento
+        var botaoModoEscuro = document.getElementById('modoEscuroBtn');
+
+        // Adicione um ouvinte de evento de clique ao botão
+        botaoModoEscuro.addEventListener('click', function() {
+            // Se o body tiver a classe "dark-mode", remova-a; caso contrário, adicione-a
+            document.body.classList.toggle('dark-mode');
+
+            // Se o corpo estiver no modo escuro, exiba a imagem de verificado e oculte o QR Code
+            if (document.body.classList.contains('dark-mode')) {
+                document.getElementById('qrCodeImage').style.display = 'none';
+                document.getElementById('verifiedImage').style.display = 'block';
+                botaoModoEscuro.classList.add('apos-clique');
+                botaoModoEscuro.textContent = 'Boleto Pago';                
+                // Desabilita o botão após clicar nele
+                botaoModoEscuro.disabled = true;
+            }
+        });
+    </script>
 </body>
 </html>

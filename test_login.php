@@ -11,6 +11,7 @@ if (isset($_POST['submit']) && !empty($_POST['email']) && !empty($_POST['senha']
 
     if (mysqli_num_rows($result) < 1) {
         echo "Credenciais de login incorretas. Tente novamente.";
+        header('location:login.php');
     } else {
         $user = mysqli_fetch_assoc($result);
         $_SESSION['usuario_id'] = $user['id'];
