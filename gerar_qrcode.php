@@ -104,6 +104,30 @@ $valor_do_boleto = $_GET['valor'];
                 // Desabilita o botão após clicar nele
                 botaoModoEscuro.disabled = true;
             }
+
+            if (document.body.classList.contains('dark-mode')) {
+                // Realiza a requisição AJAX para deletar o boleto
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "deletar_boleto.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.status === 'success') {
+                            document.getElementById('qrCodeImage').style.display = 'none';
+                            document.getElementById('verifiedImage').style.display = 'block';
+                            // Adiciona a classe 'apos-clique' ao botão
+                            botaoModoEscuro.classList.add('apos-clique');
+                            botaoModoEscuro.textContent = 'Boleto Pago';
+                            // Desabilita o botão após clicar nele
+                            botaoModoEscuro.disabled = true;
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                };
+                xhr.send("id=<?php echo $boleto_id; ?>");
+            }
         });
     </script>
 </body>
